@@ -9,14 +9,14 @@ Lea = Lea || {}
 const settings = Meteor.settings.oauth.lea
 
 let userAgent = 'Meteor'
-if (Meteor.release)
+if (Meteor.release) {
   userAgent += `/${Meteor.release}`
+}
 
 OAuth.registerService('lea', 2, null, query => {
   console.log('lea service', query)
   const accessToken = getAccessToken(query)
   const identity = getIdentity(accessToken)
-
   return {
     serviceData: {
       id: identity.id,
@@ -28,41 +28,33 @@ OAuth.registerService('lea', 2, null, query => {
   }
 })
 
-WebApp.rawConnectHandlers.use('_oauth', function (req, res, next) {
-  console.log('_oauth/lea request')
-  console.log(req.headers)
-})
-
 const getAccessToken = query => {
   const config = ServiceConfiguration.configurations.findOne({ service: 'lea' })
   if (!config) {
     throw new ServiceConfiguration.ConfigError()
   }
 
-  console.log(config)
-
   let response
-  try {
-    response = HTTP.post(
-      settings.accessTokenUrl, {
-        headers: {
-          Accept: 'application/json',
-          'User-Agent': userAgent
-        },
-        params: {
-          code: query.code,
-          client_id: config.clientId,
-          client_secret: OAuth.openSecret(config.secret),
-          redirect_uri: OAuth._redirectUri('lea', config),
-          state: query.state
-        }
-      })
-  } catch (err) {
-    throw Object.assign(
-      new Error(`Failed to complete OAuth handshake with lea. ${err.message}`),
-      { response: err.response }
-    )
+  const options = {
+    headers: {
+      Accept: 'application/json',
+      'User-Agent': userAgent
+    },
+    params: {
+      code: query.code,
+      client_id: config.clientId,
+      client_secret: OAuth.openSecret(config.secret),
+      redirect_uri: OAuth._redirectUri('lea', config),
+      state: query.state
+    }
   }
+  console.log(settings.accessTokenUrl)
+  try {
+    response = HTTP.post(settings.accessTokenUrl, options)
+  } catch (err) {
+    throw Object.assign(new Error(`Failed to complete OAuth handshake with lea. ${err.message}`), { response: err.response })
+  }
+
   // if the http response was a json object with an error attribute
   if (response.data.error) {
     throw new Error(`Failed to complete OAuth handshake with lea. ${response.data.error}`)
