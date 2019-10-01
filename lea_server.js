@@ -14,10 +14,15 @@ if (Meteor.release) {
 }
 
 OAuth.registerService('lea', 2, null, query => {
-  console.log('lea service', query)
   const accessToken = getAccessToken(query)
   const identity = getIdentity(accessToken)
   const sealedToken = OAuth.sealSecret(accessToken)
+
+  const profile =  {}
+  ;(settings.identity||[]).forEach(key => {
+    profile[key] = identity[key]
+  })
+console.log(profile)
   return {
     serviceData: {
       id: identity.id,
@@ -25,7 +30,7 @@ OAuth.registerService('lea', 2, null, query => {
       email: identity.email || '',
       username: identity.login
     },
-    options: { profile: { name: identity.name } }
+    options: { profile }
   }
 })
 
@@ -66,7 +71,6 @@ const getAccessToken = query => {
 }
 
 const getIdentity = (accessToken) => {
-  console.log('call identity', settings.identityUrl, accessToken)
   let response
   const options = {
     headers: { Accept: 'application/json', 'User-Agent': userAgent, Authorization: `Bearer ${accessToken}` },
@@ -81,7 +85,7 @@ const getIdentity = (accessToken) => {
       { response: err.response }
     )
   }
-  console.log(response.data)
+
   return response && response.data
 }
 
