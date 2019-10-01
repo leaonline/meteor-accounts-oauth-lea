@@ -17,10 +17,11 @@ OAuth.registerService('lea', 2, null, query => {
   console.log('lea service', query)
   const accessToken = getAccessToken(query)
   const identity = getIdentity(accessToken)
+  const sealedToken = OAuth.sealSecret(accessToken)
   return {
     serviceData: {
       id: identity.id,
-      accessToken: OAuth.sealSecret(accessToken),
+      accessToken: sealedToken,
       email: identity.email || '',
       username: identity.login
     },
@@ -49,7 +50,7 @@ const getAccessToken = query => {
       grant_type: 'authorization_code'
     }
   }
-  console.log('[Accounts lea]: getAccessToken', settings.accessTokenUrl)
+
   try {
     response = HTTP.post(settings.accessTokenUrl, options)
   } catch (err) {
@@ -57,26 +58,31 @@ const getAccessToken = query => {
   }
 
   // if the http response was a json object with an error attribute
-  if (response.data.error) {
+  if (response.data && response.data.error) {
     throw new Error(`Failed to complete OAuth handshake with lea. ${response.data.error}`)
   } else {
     return response.data.access_token
   }
 }
 
-const getIdentity = accessToken => {
+const getIdentity = (accessToken) => {
+  console.log('call identity', settings.identityUrl, accessToken)
+  let response
+  const options = {
+    headers: { Accept: 'application/json', 'User-Agent': userAgent, Authorization: `Bearer ${accessToken}` },
+  }
+
   try {
-    return HTTP.get(
-      settings.identityUrl, {
-        headers: { 'User-Agent': userAgent },
-        params: { access_token: accessToken }
-      }).data
+    response = HTTP.get(
+      settings.identityUrl, options)
   } catch (err) {
     throw Object.assign(
       new Error(`Failed to fetch identity from lea. ${err.message}`),
       { response: err.response }
     )
   }
+  console.log(response.data)
+  return response && response.data
 }
 
 Lea.retrieveCredential = (credentialToken, credentialSecret) => OAuth.retrieveCredential(credentialToken, credentialSecret)
