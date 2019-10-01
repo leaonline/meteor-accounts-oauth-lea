@@ -45,10 +45,11 @@ const getAccessToken = query => {
       client_id: config.clientId,
       client_secret: OAuth.openSecret(config.secret),
       redirect_uri: OAuth._redirectUri('lea', config),
-      state: query.state
+      state: query.state,
+      grant_type: 'authorization_code'
     }
   }
-  console.log(settings.accessTokenUrl)
+  console.log('[Accounts lea]: getAccessToken', settings.accessTokenUrl)
   try {
     response = HTTP.post(settings.accessTokenUrl, options)
   } catch (err) {
