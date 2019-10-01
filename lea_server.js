@@ -22,7 +22,7 @@ OAuth.registerService('lea', 2, null, query => {
   ;(settings.identity||[]).forEach(key => {
     profile[key] = identity[key]
   })
-console.log(profile)
+
   return {
     serviceData: {
       id: identity.id,
@@ -57,7 +57,7 @@ const getAccessToken = query => {
   }
 
   try {
-    response = HTTP.post(settings.accessTokenUrl, options)
+    response = HTTP.post(config.accessTokenUrl, options)
   } catch (err) {
     throw Object.assign(new Error(`Failed to complete OAuth handshake with lea. ${err.message}`), { response: err.response })
   }
@@ -71,14 +71,18 @@ const getAccessToken = query => {
 }
 
 const getIdentity = (accessToken) => {
+  const config = ServiceConfiguration.configurations.findOne({ service: 'lea' })
+  if (!config) {
+    throw new ServiceConfiguration.ConfigError()
+  }
+
   let response
   const options = {
     headers: { Accept: 'application/json', 'User-Agent': userAgent, Authorization: `Bearer ${accessToken}` },
   }
 
   try {
-    response = HTTP.get(
-      settings.identityUrl, options)
+    response = HTTP.get(config.identityUrl, options)
   } catch (err) {
     throw Object.assign(
       new Error(`Failed to fetch identity from lea. ${err.message}`),
