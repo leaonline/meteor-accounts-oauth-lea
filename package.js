@@ -12,10 +12,10 @@ Package.describe({
 
 Package.onUse(api => {
   api.use('ecmascript@0.12.7', ['client', 'server']);
-  api.use('oauth2@latest', ['client', 'server']);
+  api.use('oauth2', ['client', 'server']);
   api.use('oauth@1.2.8', ['client', 'server']);
-  api.use('http@latest', ['server']);
-  api.use('random@latest', 'client');
+  api.use('http', ['server']);
+  api.use('random', 'client');
   api.use('service-configuration', ['client', 'server']);
 
   api.addFiles('lea_client.js', 'client');

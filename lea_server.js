@@ -6,20 +6,24 @@ import { WebApp } from 'meteor/webapp'
 
 Lea = Lea || {}
 
-const settings = Meteor.settings.oauth.lea
-
 let userAgent = 'Meteor'
 if (Meteor.release) {
   userAgent += `/${Meteor.release}`
 }
 
 OAuth.registerService('lea', 2, null, query => {
+  const config = ServiceConfiguration.configurations.findOne({ service: 'lea' })
+  if (!config) {
+    throw new ServiceConfiguration.ConfigError()
+  }
+
+
   const accessToken = getAccessToken(query)
   const identity = getIdentity(accessToken)
   const sealedToken = OAuth.sealSecret(accessToken)
 
   const profile =  {}
-  ;(settings.identity||[]).forEach(key => {
+  ;(config.identity||[]).forEach(key => {
     profile[key] = identity[key]
   })
 
