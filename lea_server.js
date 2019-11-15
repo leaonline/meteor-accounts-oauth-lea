@@ -1,4 +1,4 @@
-/* global Lea, ServiceConfiguration */
+/* global ServiceConfiguration */
 import { Meteor } from 'meteor/meteor'
 import { OAuth } from 'meteor/oauth'
 import { HTTP } from 'meteor/http'
@@ -95,4 +95,4 @@ const getIdentity = (accessToken) => {
   return response && response.data
 }
 
-Lea.retrieveCredential = (credentialToken, credentialSecret) => OAuth.retrieveCredential(credentialToken, credentialSecret)
+global.Lea.retrieveCredential = (credentialToken, credentialSecret) => OAuth.retrieveCredential(credentialToken, credentialSecret)

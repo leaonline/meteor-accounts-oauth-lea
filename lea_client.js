@@ -1,4 +1,4 @@
-/* global ServiceConfiguration, Lea */
+/* global ServiceConfiguration */
 import { Random } from 'meteor/random'
 import { OAuth } from 'meteor/oauth'
 
@@ -10,7 +10,7 @@ global.Lea = global.Lea || {}
 // @param credentialRequestCompleteCallback {Function} Callback function to call on
 //   completion. Takes one argument, credentialToken on success, or Error on
 //   error.
-Lea.requestCredential = (options, credentialRequestCompleteCallback) => {
+global.Lea.requestCredential = (options, credentialRequestCompleteCallback) => {
   // support both (options, callback) and (callback).
   if (!credentialRequestCompleteCallback && typeof options === 'function') {
     credentialRequestCompleteCallback = options
