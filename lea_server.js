@@ -1,9 +1,10 @@
-/* global ServiceConfiguration */
+/* global ServiceConfiguration, Lea */
 import { Meteor } from 'meteor/meteor'
 import { OAuth } from 'meteor/oauth'
 import { HTTP } from 'meteor/http'
 
-global.Lea = global.Lea || {}
+// eslint-disable-next-line
+Lea = Lea || {}
 
 let userAgent = 'Meteor'
 if (Meteor.release) {
@@ -95,4 +96,4 @@ const getIdentity = (accessToken) => {
   return response && response.data
 }
 
-global.Lea.retrieveCredential = (credentialToken, credentialSecret) => OAuth.retrieveCredential(credentialToken, credentialSecret)
+Lea.retrieveCredential = (credentialToken, credentialSecret) => OAuth.retrieveCredential(credentialToken, credentialSecret)

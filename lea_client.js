@@ -1,8 +1,9 @@
-/* global ServiceConfiguration */
+/* global ServiceConfiguration, Lea */
 import { Random } from 'meteor/random'
 import { OAuth } from 'meteor/oauth'
 
-global.Lea = global.Lea || {}
+// eslint-disable-next-line
+Lea = Lea || {}
 
 // Request Lea credentials for the user
 //
@@ -10,7 +11,7 @@ global.Lea = global.Lea || {}
 // @param credentialRequestCompleteCallback {Function} Callback function to call on
 //   completion. Takes one argument, credentialToken on success, or Error on
 //   error.
-global.Lea.requestCredential = (options, credentialRequestCompleteCallback) => {
+Lea.requestCredential = (options, credentialRequestCompleteCallback) => {
   // support both (options, callback) and (callback).
   if (!credentialRequestCompleteCallback && typeof options === 'function') {
     credentialRequestCompleteCallback = options
