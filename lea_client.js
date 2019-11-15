@@ -2,7 +2,7 @@
 import { Random } from 'meteor/random'
 import { OAuth } from 'meteor/oauth'
 
-Lea = Lea || {}
+global.Lea = global.Lea || {}
 
 // Request Lea credentials for the user
 //
@@ -27,7 +27,7 @@ Lea.requestCredential = (options, credentialRequestCompleteCallback) => {
   const mobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|Windows Phone/i.test(navigator.userAgent)
   const display = mobile ? 'touch' : 'popup'
 
-  let scope = [ 'email' ]
+  let scope = ['email']
   if (options && options.requestPermissions) {
     scope = scope.concat(options.requestPermissions)
   }
@@ -39,7 +39,7 @@ Lea.requestCredential = (options, credentialRequestCompleteCallback) => {
 
   const loginUrl =
     `${dialogUrl}` +
-    `?response_type=code` +
+    '?response_type=code' +
     `&client_id=${serviceConfig.clientId}` +
     `&scope=${flatScope}` +
     `&display=${display}` +

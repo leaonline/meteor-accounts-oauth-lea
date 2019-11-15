@@ -2,9 +2,8 @@
 import { Meteor } from 'meteor/meteor'
 import { OAuth } from 'meteor/oauth'
 import { HTTP } from 'meteor/http'
-import { WebApp } from 'meteor/webapp'
 
-Lea = Lea || {}
+global.Lea = global.Lea || {}
 
 let userAgent = 'Meteor'
 if (Meteor.release) {
@@ -17,13 +16,12 @@ OAuth.registerService('lea', 2, null, query => {
     throw new ServiceConfiguration.ConfigError()
   }
 
-
   const accessToken = getAccessToken(query)
   const identity = getIdentity(accessToken)
   const sealedToken = OAuth.sealSecret(accessToken)
 
-  const profile =  {}
-  ;(config.identity||[]).forEach(key => {
+  const profile = {}
+  ;(config.identity || []).forEach(key => {
     profile[key] = identity[key]
   })
 
@@ -82,7 +80,7 @@ const getIdentity = (accessToken) => {
 
   let response
   const options = {
-    headers: { Accept: 'application/json', 'User-Agent': userAgent, Authorization: `Bearer ${accessToken}` },
+    headers: { Accept: 'application/json', 'User-Agent': userAgent, Authorization: `Bearer ${accessToken}` }
   }
 
   try {
