@@ -87,10 +87,9 @@ const getIdentity = (accessToken) => {
   try {
     response = HTTP.get(config.identityUrl, options)
   } catch (err) {
-    throw Object.assign(
-      new Error(`Failed to fetch identity from lea. ${err.message}`),
-      { response: err.response }
-    )
+    const errorResponse = err.response
+    console.error(errorResponse.data)
+    throw new Meteor.Error(errorResponse.statusCode || '500', 'lea.oauth.getIdentity.failed', errorResponse)
   }
 
   return response && response.data
