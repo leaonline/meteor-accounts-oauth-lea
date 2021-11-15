@@ -26,12 +26,20 @@ OAuth.registerService('lea', 2, null, query => {
     profile[key] = identity[key]
   })
 
+  // we can now define in ServiceConfig additional fields that will not be saved
+  // in user.profile but directly in the service data!
+  const extraFields = {}
+  ;(config.extraFields || []).forEach(key => {
+    extraFields[key] = identity[key]
+  })
+
   return {
     serviceData: {
       id: identity.id,
       accessToken: sealedToken,
       email: identity.email || '',
-      username: identity.login
+      username: identity.login,
+      ...extraFields
     },
     options: { profile }
   }
