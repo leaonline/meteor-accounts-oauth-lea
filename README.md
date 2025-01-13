@@ -30,6 +30,7 @@ Meteor.startup(() => {
         accessTokenUrl: oauth.accessTokenUrl,
         identityUrl: oauth.identityUrl,
         redirectUrl: oauth.redirectUrl,
+        
         // additional fields injected into profile
         // optional; these are just examples:
         identity: [
@@ -41,12 +42,21 @@ Meteor.startup(() => {
         // optional; these are just examples:
         extraFields: [
           'roles'
-        ]
+        ],
+        
+        // enable some debugging messages in consoles
+        debug: true,
       }
     }
   )
 })
 ```
+
+## Changelog
+
+### 2.0.0
+- Meteor 3 compatibility
+- read `debug` flag from service config to enable debugging
 
 ## License
 

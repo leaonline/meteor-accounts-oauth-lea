@@ -1,7 +1,7 @@
 /* eslint-env meteor */
 Package.describe({
   name: 'leaonline:oauth-lea',
-  version: '2.0.0',
+  version: '3.0.0',
   // Brief, one-line summary of the package.
   summary: 'OAuth package to provide authorizaiton code login with lea',
   // URL to the Git repository containing the source code for this package.
@@ -12,13 +12,12 @@ Package.describe({
 })
 
 Package.onUse(api => {
-  api.versionsFrom(['1.6', '2.3'])
-  api.use('ecmascript@0.12.7', ['client', 'server'])
-  api.use('oauth2@1.2.1 || 2.0.0', ['client', 'server'])
-  api.use('oauth@1.2.8 || 2.0.0', ['client', 'server'])
-  api.use('http@1.4.2 || 2.0.0', ['server'])
-  api.use('random@1.1.0', 'client')
-  api.use('service-configuration@1.0.11', ['client', 'server'])
+  api.versionsFrom(['1.6', '2.3', '3.0.1'])
+  api.use('ecmascript')
+  api.use('oauth2@1.3.3', ['client', 'server'])
+  api.use('oauth@2.0.0 || 3.0.0', ['client', 'server'])
+  api.use('random', 'client')
+  api.use('service-configuration@1.3.5', ['client', 'server'])
 
   api.addFiles('lea_client.js', 'client')
   api.addFiles('lea_server.js', 'server')

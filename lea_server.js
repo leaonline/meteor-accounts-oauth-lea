@@ -1,7 +1,6 @@
 /* global ServiceConfiguration, Lea */
 import { Meteor } from 'meteor/meteor'
 import { OAuth } from 'meteor/oauth'
-import { HTTP } from 'meteor/http'
 
 // eslint-disable-next-line
 Lea = Lea || {}
@@ -11,20 +10,31 @@ if (Meteor.release) {
   userAgent += `/${Meteor.release}`
 }
 
-OAuth.registerService('lea', 2, null, query => {
-  const config = ServiceConfiguration.configurations.findOne({ service: 'lea' })
+OAuth.registerService('lea', 2, null, async query => {
+  const config = await ServiceConfiguration.configurations.findOneAsync({ service: 'lea' })
   if (!config) {
     throw new ServiceConfiguration.ConfigError()
   }
+  const debug = config.debug
+    ? (...args) => console.debug('[accounts-oauth-lea]:', ...args)
+    : () => {}
 
-  const accessToken = getAccessToken(query)
-  const identity = getIdentity(accessToken)
+  debug('run lea Oauth handler')
+
+  const accessToken = await getAccessToken({ query, config, debug })
+  debug('access token', accessToken)
+
+  const identity = await getIdentity({ accessToken, config, debug })
+  debug('identity', identity)
+
   const sealedToken = OAuth.sealSecret(accessToken)
+  debug('sealed token', sealedToken)
 
   const profile = {}
   ;(config.identity || []).forEach(key => {
     profile[key] = identity[key]
   })
+  debug('profile', profile)
 
   // we can now define in ServiceConfig additional fields that will not be saved
   // in user.profile but directly in the service data!
@@ -32,6 +42,7 @@ OAuth.registerService('lea', 2, null, query => {
   ;(config.extraFields || []).forEach(key => {
     extraFields[key] = identity[key]
   })
+  debug('extra fields', extraFields)
 
   return {
     serviceData: {
@@ -45,19 +56,10 @@ OAuth.registerService('lea', 2, null, query => {
   }
 })
 
-const getAccessToken = query => {
-  const config = ServiceConfiguration.configurations.findOne({ service: 'lea' })
-  if (!config) {
-    throw new ServiceConfiguration.ConfigError()
-  }
-
+const getAccessToken = async ({ query, config, debug }) => {
   let response
-  const options = {
-    headers: {
-      Accept: 'application/json',
-      'User-Agent': userAgent
-    },
-    params: {
+  try {
+    const body = {
       code: query.code,
       client_id: config.clientId,
       client_secret: OAuth.openSecret(config.secret),
@@ -65,42 +67,51 @@ const getAccessToken = query => {
       state: query.state,
       grant_type: 'authorization_code'
     }
-  }
-
-  try {
-    response = HTTP.post(config.accessTokenUrl, options)
+    debug('fetch access token', config.accessTokenUrl, 'POST', body)
+    const request = await fetch(config.accessTokenUrl, {
+      method: 'POST',
+      body: JSON.stringify(body),
+      headers: {
+        Accept: 'application/json',
+        'User-Agent': userAgent,
+        'Content-Type': 'application/json'
+      }
+    })
+    response = await request.json()
   } catch (err) {
-    throw Object.assign(new Error(`Failed to complete OAuth handshake with lea. ${err.message}`), { response: err.response })
+    throw new Meteor.Error(
+      'OAuth Failed',
+      `Failed to complete OAuth handshake with lea. ${err.message}`,
+      { response: err.response }
+    )
   }
 
   // if the http response was a json object with an error attribute
-  if (response.data && response.data.error) {
-    throw new Error(`Failed to complete OAuth handshake with lea. ${response.data.error}`)
-  } else {
-    return response.data.access_token
+  // we also need to process it as error
+  if (response.error) {
+    throw new Error(`Failed to complete OAuth handshake with lea. ${response.error}`)
+  }
+  else {
+    return response.access_token
   }
 }
 
-const getIdentity = (accessToken) => {
-  const config = ServiceConfiguration.configurations.findOne({ service: 'lea' })
-  if (!config) {
-    throw new ServiceConfiguration.ConfigError()
-  }
-
-  let response
-  const options = {
-    headers: { Accept: 'application/json', 'User-Agent': userAgent, Authorization: `Bearer ${accessToken}` }
-  }
-
+const getIdentity = async ({ accessToken, config, debug }) => {
   try {
-    response = HTTP.get(config.identityUrl, options)
+    const request = await fetch(config.identityUrl, {
+      methods: 'GET',
+      headers: {
+        Accept: 'application/json',
+        'User-Agent': userAgent,
+        Authorization: `Bearer ${accessToken}`
+      }
+    })
+    return await request.json()
   } catch (err) {
     const errorResponse = err.response
-    console.error(errorResponse.data)
     throw new Meteor.Error(errorResponse.statusCode || '500', 'lea.oauth.getIdentity.failed', errorResponse)
   }
-
-  return response && response.data
 }
 
-Lea.retrieveCredential = (credentialToken, credentialSecret) => OAuth.retrieveCredential(credentialToken, credentialSecret)
+Lea.retrieveCredential = (credentialToken, credentialSecret) =>
+  OAuth.retrieveCredential(credentialToken, credentialSecret)
